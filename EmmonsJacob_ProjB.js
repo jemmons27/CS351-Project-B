@@ -114,15 +114,20 @@ function initVertexBuffers() {
   //  | |v7---|-|v4
   //  |/      |/
   //  v2------v3
+  initAxes();
   initGrid();
   initTreePart();
 
-  var mySiz = (gndVerts.length + treePartVerts.length)
+  var mySiz = (axesVerts.length + gndVerts.length + treePartVerts.length)
   var verticesColors = new Float32Array(mySiz);
-
+  
   gridStart = 0;
   for (i=0, j=0; j < gndVerts.length; i++, j++) {
     verticesColors[i] = gndVerts[j];
+  }
+  axesStart = i/7;
+  for (j=0; j < axesVerts.length; i++, j++) {
+    verticesColors[i] = axesVerts[j];
   }
   treePartStart = i/7;
   for (j=0; j < treePartVerts.length; i++, j++) {
@@ -237,7 +242,7 @@ function initGrid() {
 		gndVerts[j+6] = yColr[2];			// blu
 	}
     gndVertsLen = gndVerts.length/7
-}
+};
 
 function initTreePart() {
     treePartVerts = new Float32Array([
@@ -705,7 +710,21 @@ function initTreePart() {
         }
     }
     treePartLen = treePartVerts.length/7;
-}
+};
+
+function initAxes() {
+  axesVerts = new Float32Array ([
+    0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,
+    3.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,
+
+    0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+    0.0, 3.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
+    0.0, 0.0, 3.0, 1.0, 1.0, 1.0, 1.0,
+  ]);
+  axesVertsLen = axesVerts.length/7;
+};
 
 function draw() {
 //==============================================================================
@@ -716,13 +735,18 @@ function draw() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   
   setLeftViewPort();
+  console.log("left viewport set");
   drawGrid();
+  drawAxes();
 
   // Draw treepart
+  g_mvpMatrix.scale(3, 3, 3);
+  g_mvpMatrix.rotate(90, 1, 0, 0);
   drawTreePart();
   
   setRightViewPort();
   drawGrid();
+  drawAxes();
   //draw treepart
   drawTreePart();
 }
@@ -735,12 +759,14 @@ function setLeftViewPort() {
     var vpAspect = (g_canvas.width/2) / g_canvas.height;	//Aspect Ratio
 
 // For this viewport, set camera's eye point and the viewing volume:
-    g_mvpMatrix.setPerspective(30,			// fovy: y-axis field-of-view in degrees 	
+    g_mvpMatrix.setPerspective(35,			// fovy: y-axis field-of-view in degrees 	
                                                   // (top <-> bottom in view frustum)
                               vpAspect, // aspect ratio: width/height
                               1, 100);	// near, far (always >0).
-    g_mvpMatrix.lookAt(	3, 3, 7, 				// 'Center' or 'Eye Point',
+    g_mvpMatrix.lookAt(	0, -10, 20,
+           				// 'Center' or 'Eye Point',
               0, 0, 0, 					// look-At point,
+              1, 100, -5,
               0, 1, 0);					// View UP vector, all in 'world' coords.
 };
 
@@ -764,6 +790,10 @@ function setRightViewPort() {
 function drawGrid() {
     gl.uniformMatrix4fv(g_mvpMatrixLoc, false, g_mvpMatrix.elements);
     gl.drawArrays(gl.LINES, gridStart, gndVertsLen);
+}
+function drawAxes(){
+  gl.uniformMatrix4fv(g_mvpMatrixLoc, false, g_mvpMatrix.elements);
+  gl.drawArrays(gl.LINES, axesStart, axesVertsLen);
 }
 function drawTreePart() {
     gl.uniformMatrix4fv(g_mvpMatrixLoc, false, g_mvpMatrix.elements);
