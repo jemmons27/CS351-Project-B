@@ -56,14 +56,15 @@ var g_mvpMatrix = new Matrix4();  // model-view-projection matrix (for 3D camera
 var g_mvpMatrixLoc;     // GPU location for the u_mvpMatrix uniform var
 var g_vertCount = 0;    // # of vertices to draw
 
-var eyex;
-var eyey;
-var eyez;
-var upx;
-var upy;
-var upz;
-var theta;
-var deltaZ;
+var eye = new Vector3([10, 10, 9]);
+var aimx;
+var aimy;
+var aimz;
+var aim = new Vector3([0, 0, 0]); //init values, will be changed immediately
+var up = new Vector3([0, 0, 1]);
+var theta = (7*Math.PI)/6;
+var deltaZ = -.65;
+var velocity = .1;
 
 
 function main() {
@@ -98,6 +99,7 @@ function main() {
     console.log('Failed to get GPU storage location of u_MvpMatrix');
     return;
   }
+  window.addEventListener("keydown", myKeyDown, false);
 	// Draw our canvas, re-sized to current browser-window 'inner' drawing area
   drawResize();   
   // All subsequent screen re-drawing is done when user re-sizes the browser,
@@ -111,6 +113,10 @@ function main() {
 
 function timerAll() {
     //animation will go here :)
+    aim.elements[0] = eye.elements[0] + Math.cos(theta);
+    aim.elements[1] = eye.elements[1] + Math.sin(theta);
+    aim.elements[2] = eye.elements[2] + deltaZ;
+
     
 }
 
@@ -767,7 +773,9 @@ function drawScene() {
   g_mvpMatrix.rotate(90, 1, 0, 0);
   drawTreePart();
 };
-
+var near = 1
+var far = 100
+var frust_angle = 35
 //VIEWPORT/CAMERA FUNCTIONS
 function setLeftViewPort() {
     	//----------------------Create, fill left viewport------------------------
@@ -776,18 +784,18 @@ function setLeftViewPort() {
     var vpAspect = (g_canvas.width/2) / g_canvas.height;	//Aspect Ratio
 
 // For this viewport, set camera's eye point and the viewing volume:
-    g_mvpMatrix.setPerspective(35,			// fovy: y-axis field-of-view in degrees 	
+    g_mvpMatrix.setPerspective(frust_angle,			// fovy: y-axis field-of-view in degrees 	
                                                   // (top <-> bottom in view frustum)
                               vpAspect, // aspect ratio: width/height
-                              1, 100);	// near, far (always >0).
+                              near, far);	// near, far (always >0).
     //calculate new aim:
       //camera movement back/forth - theta stays constant, eyex changes
       //camera aim rotation - theta changes, eyex stays same
       //camera strafe - cross with up and aim
-    g_mvpMatrix.lookAt(	0, -10, 20,
+    g_mvpMatrix.lookAt(	eye.elements[0], eye.elements[1], eye.elements[2],
            				// 'Center' or 'Eye Point',
-              -0 + (3**.5)/3, -10 + (3**.5)/3, 20 - (3**.5)/3,  					// look-At point,
-              0, 0, 1);					// View UP vector, all in 'world' coords.
+                  aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
+              up.elements[0], up.elements[1], up.elements[2]);					// View UP vector, all in 'world' coords.
 };
 
 function setRightViewPort() {
@@ -796,14 +804,18 @@ function setRightViewPort() {
 
 	vpAspect = (g_canvas.width/2) /	g_canvas.height; //Aspect Ratio
 
+  orthoH = 2 * (far - near)/3 * Math.tan((frust_angle/2) * Math.PI/180);
+  orthoW = orthoH * vpAspect; //? 
+  console.log("Height:", orthoH);
+  console.log("Width:", orthoW);
+  //g_mvpMatrix.ortho(-1 * orthoW/2, orthoW/2, -1 * orthoH/2, orthoH/2, -near, -far);
+  g_mvpMatrix.ortho(0, orthoW, 0, orthoH, -near, -far);
   // For this viewport, set camera's eye point and the viewing volume:
-  g_mvpMatrix.setPerspective(24.0, 		// fovy: y-axis field-of-view in degrees 	
-  																		// (top <-> bottom in view frustum)
-  													vpAspect, // aspect ratio: width/height
-  													1, 100);	// near, far (always >0).
-  g_mvpMatrix.lookAt(	4, 2, 8, 				// 'Center' or 'Eye Point',
-  									  0, 0, 0, 				// look-At point,
-  									  0, 1, 0);				// View UP vector, all in 'world' coords.
+
+  g_mvpMatrix.lookAt(	eye.elements[0], eye.elements[1], eye.elements[2],
+           				// 'Center' or 'Eye Point',
+                        aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
+                        up.elements[0], up.elements[1], up.elements[2]);					// View UP vector, all in 'world' coords.
 }
 
 //INDIVIDUAL DRAWING FUNCTIONS
@@ -847,4 +859,81 @@ function drawResize() {
     };
     //------------------------------------
     tick();                       // do it again!  (endless loop)
+}
+
+function myKeyDown(kev) {
+  console.log(  "--kev.code:",    kev.code,   "\t\t--kev.key:",     kev.key, 
+	"\n--kev.ctrlKey:", kev.ctrlKey,  "\t--kev.shiftKey:",kev.shiftKey,
+	"\n--kev.altKey:",  kev.altKey,   "\t--kev.metaKey:", kev.metaKey);
+
+  switch(kev.code) {
+    case "ArrowUp":
+      console.log("Arrowup");
+      deltaZ += .025;
+      break;
+    case "ArrowDown":
+      console.log("ArrowDown");
+      deltaZ -= .025;
+      break;
+    case "ArrowLeft":
+      console.log("ArrowLeft");
+      theta += .01;
+      console.log("Theta:", theta);
+      console.log("deltaZ:", deltaZ);
+      break;
+    case "ArrowRight":
+      console.log("ArrowRight");
+      theta -= .01;
+      break;
+    case "KeyW":
+      console.log("KeyW");
+      dx = (aim.elements[0] - eye.elements[0]) * velocity;
+      dy = (aim.elements[1] - eye.elements[1]) * velocity;
+      dz = (aim.elements[2] - eye.elements[2]) * velocity
+      eye.elements[0] += dx;
+      eye.elements[1] += dy;
+      eye.elements[2] += dz;
+      aim.elements[0] += dx;
+      aim.elements[1] += dy;
+      aim.elements[2] += dz;
+      break;
+    case "KeyS":
+      console.log("KeyS");
+      dx = (aim.elements[0] - eye.elements[0]) * velocity;
+      dy = (aim.elements[1] - eye.elements[1]) * velocity;
+      dz = (aim.elements[2] - eye.elements[2]) * velocity
+      eye.elements[0] -= dx;
+      eye.elements[1] -= dy;
+      eye.elements[2] -= dz;
+      aim.elements[0] -= dx;
+      aim.elements[1] -= dy;
+      aim.elements[2] -= dz;
+      break;
+    case "KeyA":
+      console.log("KeyA");
+      temp_vec = new Vector3([eye.elements[0] - aim.elements[0],
+                              eye.elements[1] - aim.elements[1],
+                              eye.elements[2] - aim.elements[2]]);
+      dir = temp_vec.cross(up).normalize();
+      eye.elements[0] += velocity * dir.elements[0];
+      eye.elements[1] += velocity * dir.elements[1];
+      eye.elements[2] += velocity * dir.elements[2];
+      aim.elements[0] += velocity * dir.elements[0];
+      aim.elements[1] += velocity * dir.elements[1];
+      aim.elements[2] += velocity * dir.elements[2];
+      break;
+    case "KeyD":
+      console.log("KeyD");
+      temp_vec = new Vector3([eye.elements[0] - aim.elements[0],
+                              eye.elements[1] - aim.elements[1],
+                              eye.elements[2] - aim.elements[2]]);
+      dir = temp_vec.cross(up).normalize();
+      eye.elements[0] -= velocity * dir.elements[0];
+      eye.elements[1] -= velocity * dir.elements[1];
+      eye.elements[2] -= velocity * dir.elements[2];
+      aim.elements[0] -= velocity * dir.elements[0];
+      aim.elements[1] -= velocity * dir.elements[1];
+      aim.elements[2] -= velocity * dir.elements[2];
+      break;
+  }
 }
