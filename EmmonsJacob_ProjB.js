@@ -56,6 +56,16 @@ var g_mvpMatrix = new Matrix4();  // model-view-projection matrix (for 3D camera
 var g_mvpMatrixLoc;     // GPU location for the u_mvpMatrix uniform var
 var g_vertCount = 0;    // # of vertices to draw
 
+var eyex;
+var eyey;
+var eyez;
+var upx;
+var upy;
+var upz;
+var theta;
+var deltaZ;
+
+
 function main() {
 //==============================================================================
   // Get the rendering context for WebGL; 
@@ -191,8 +201,8 @@ function initGrid() {
 // Create a list of vertices that create a large grid of lines in the x,y plane
 // centered at x=y=z=0.  Draw this shape using the GL_LINES primitive.
 
-	var xcount = 300;			// # of lines to draw in x,y to make the grid.
-	var ycount = 300;		
+	var xcount = 200;			// # of lines to draw in x,y to make the grid.
+	var ycount = 200;		
 	var xymax	= 50.0;			// grid size; extends to cover +/-xymax in x and y.
  	var xColr = new Float32Array([1.0, 1.0, 0.3]);	// bright yellow
  	var yColr = new Float32Array([0.5, 1.0, 0.5]);	// bright green.
@@ -733,9 +743,22 @@ function draw() {
   // Clear color and depth buffer for ENTIRE GPU drawing buffer:
   // (careful! clears contents of ALL viewports!)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  g_mvpMatrix.setIdentity();
+  //LEFT VIEWPORT --------------------------------------------------------------
+  setLeftViewPort(); //Set world coords for left viewport
+  pushMatrix(g_mvpMatrix); //Save world coords
+    drawScene(); //draw the scene
+  g_mvpMatrix = popMatrix(); //return to world coords
+
+//RIGHT VIEWPORT ---------------------------------------------------------------
+  setRightViewPort();//Set world coords for right viewport
+  pushMatrix(g_mvpMatrix);
+    drawScene();
+  g_mvpMatrix = popMatrix();
   
-  setLeftViewPort();
-  console.log("left viewport set");
+}
+
+function drawScene() {
   drawGrid();
   drawAxes();
 
@@ -743,13 +766,7 @@ function draw() {
   g_mvpMatrix.scale(3, 3, 3);
   g_mvpMatrix.rotate(90, 1, 0, 0);
   drawTreePart();
-  
-  setRightViewPort();
-  drawGrid();
-  drawAxes();
-  //draw treepart
-  drawTreePart();
-}
+};
 
 //VIEWPORT/CAMERA FUNCTIONS
 function setLeftViewPort() {
@@ -763,11 +780,14 @@ function setLeftViewPort() {
                                                   // (top <-> bottom in view frustum)
                               vpAspect, // aspect ratio: width/height
                               1, 100);	// near, far (always >0).
+    //calculate new aim:
+      //camera movement back/forth - theta stays constant, eyex changes
+      //camera aim rotation - theta changes, eyex stays same
+      //camera strafe - cross with up and aim
     g_mvpMatrix.lookAt(	0, -10, 20,
            				// 'Center' or 'Eye Point',
-              0, 0, 0, 					// look-At point,
-              1, 100, -5,
-              0, 1, 0);					// View UP vector, all in 'world' coords.
+              -0 + (3**.5)/3, -10 + (3**.5)/3, 20 - (3**.5)/3,  					// look-At point,
+              0, 0, 1);					// View UP vector, all in 'world' coords.
 };
 
 function setRightViewPort() {
