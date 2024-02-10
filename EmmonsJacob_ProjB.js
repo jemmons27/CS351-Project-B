@@ -773,9 +773,9 @@ function drawScene() {
   g_mvpMatrix.rotate(90, 1, 0, 0);
   drawTreePart();
 };
-var near = 1
-var far = 100
-var frust_angle = 35
+var near = 1;
+var far = 100;
+var frust_angle = 35;
 //VIEWPORT/CAMERA FUNCTIONS
 function setLeftViewPort() {
     	//----------------------Create, fill left viewport------------------------
@@ -808,10 +808,9 @@ function setRightViewPort() {
   orthoW = orthoH * vpAspect; //? 
   console.log("Height:", orthoH);
   console.log("Width:", orthoW);
-  //g_mvpMatrix.ortho(-1 * orthoW/2, orthoW/2, -1 * orthoH/2, orthoH/2, -near, -far);
-  g_mvpMatrix.ortho(0, orthoW, 0, orthoH, -near, -far);
+  g_mvpMatrix.ortho(-1 * orthoW/2, orthoW/2, -1 * orthoH/2, orthoH/2, -near, -far);
+  //g_mvpMatrix.ortho(0, orthoW, 0, orthoH, -near, -far);
   // For this viewport, set camera's eye point and the viewing volume:
-
   g_mvpMatrix.lookAt(	eye.elements[0], eye.elements[1], eye.elements[2],
            				// 'Center' or 'Eye Point',
                         aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
