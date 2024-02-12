@@ -56,14 +56,15 @@ var g_mvpMatrix = new Matrix4();  // model-view-projection matrix (for 3D camera
 var g_mvpMatrixLoc;     // GPU location for the u_mvpMatrix uniform var
 var g_vertCount = 0;    // # of vertices to draw
 
-var eye = new Vector3([10, 10, 9]);
+var eye = new Vector3([50.35, 53.33, 8.44]);
 var aimx;
 var aimy;
 var aimz;
 var aim = new Vector3([0, 0, 0]); //init values, will be changed immediately
 var up = new Vector3([0, 0, 1]);
-var theta = (7*Math.PI)/6;
-var deltaZ = -.65;
+//var theta = (7*Math.PI)/6;
+var theta = 3.96;
+var deltaZ = -.045;
 var velocity = .1;
 
 
@@ -769,12 +770,12 @@ function drawScene() {
   drawAxes();
 
   // Draw treepart
-  g_mvpMatrix.scale(3, 3, 3);
+  g_mvpMatrix.scale(5, 5, 5);
   g_mvpMatrix.rotate(90, 1, 0, 0);
   drawTreePart();
 };
 var near = 1;
-var far = 100;
+var far = 200;
 var frust_angle = 35;
 //VIEWPORT/CAMERA FUNCTIONS
 function setLeftViewPort() {
@@ -796,6 +797,10 @@ function setLeftViewPort() {
            				// 'Center' or 'Eye Point',
                   aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
               up.elements[0], up.elements[1], up.elements[2]);					// View UP vector, all in 'world' coords.
+              //tan(theta) = o/a a = o/tan theta
+    console.log("eye:", eye.elements);
+    console.log("theta", theta);
+    console.log("deltaz", deltaZ);
 };
 
 function setRightViewPort() {
@@ -806,15 +811,15 @@ function setRightViewPort() {
 
   orthoH = 2 * (far - near)/3 * Math.tan((frust_angle/2) * Math.PI/180);
   orthoW = orthoH * vpAspect; //? 
-  console.log("Height:", orthoH);
-  console.log("Width:", orthoW);
-  g_mvpMatrix.ortho(-1 * orthoW/2, orthoW/2, -1 * orthoH/2, orthoH/2, -near, -far);
+  g_mvpMatrix.setOrtho(-1 * orthoW/2, orthoW/2, -1 * orthoH/2, orthoH/2, near, far);
   //g_mvpMatrix.ortho(0, orthoW, 0, orthoH, -near, -far);
   // For this viewport, set camera's eye point and the viewing volume:
+  
   g_mvpMatrix.lookAt(	eye.elements[0], eye.elements[1], eye.elements[2],
            				// 'Center' or 'Eye Point',
                         aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
                         up.elements[0], up.elements[1], up.elements[2]);					// View UP vector, all in 'world' coords.
+                        
 }
 
 //INDIVIDUAL DRAWING FUNCTIONS
@@ -847,7 +852,7 @@ function drawResize() {
 	//Make canvas fill the top 3/4 of our browser window:
 	var xtraMargin = 16;    // keep a margin (otherwise, browser adds scroll-bars)
 	g_canvas.width = innerWidth - xtraMargin;
-	g_canvas.height = (innerHeight*3/4) - xtraMargin;
+	g_canvas.height = (innerHeight*2/3) - xtraMargin;
 	// IMPORTANT!  Need a fresh drawing in the re-sized viewports.
     var tick = function() {		    // locally (within main() only), define our 
         // self-calling animation function. 
