@@ -56,16 +56,19 @@ var g_mvpMatrix = new Matrix4();  // model-view-projection matrix (for 3D camera
 var g_mvpMatrixLoc;     // GPU location for the u_mvpMatrix uniform var
 var g_vertCount = 0;    // # of vertices to draw
 
-var eye = new Vector3([50.35, 53.33, 8.44]);
+var eye = new Vector3([49.6, 52.51, 15.13]);
 var aimx;
 var aimy;
 var aimz;
 var aim = new Vector3([0, 0, 0]); //init values, will be changed immediately
 var up = new Vector3([0, 0, 1]);
 //var theta = (7*Math.PI)/6;
-var theta = 3.96;
-var deltaZ = -.045;
+var theta = 3.95;
+var deltaZ = -.27;
 var velocity = .1;
+var near = .01;
+var far = 400;
+var frust_angle = 35;
 
 
 function main() {
@@ -774,9 +777,6 @@ function drawScene() {
   g_mvpMatrix.rotate(90, 1, 0, 0);
   drawTreePart();
 };
-var near = 1;
-var far = 200;
-var frust_angle = 35;
 //VIEWPORT/CAMERA FUNCTIONS
 function setLeftViewPort() {
     	//----------------------Create, fill left viewport------------------------
