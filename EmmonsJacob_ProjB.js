@@ -2229,8 +2229,6 @@ function drawScene() {
   pushMatrix(g_mvpMatrix)
     g_mvpMatrix.rotate(-90, 1, 0, 0);
     g_mvpMatrix.translate(20, -5, 5)
-    quatMatrix.setFromQuat(qTot.x, qTot.y, qTot.z, qTot.w);
-    g_mvpMatrix.concat(quatMatrix);
     g_mvpMatrix.scale(3, 3, 3);
     drawArm();
     drawAxes();
@@ -2284,11 +2282,14 @@ function drawScene() {
   pushMatrix(g_mvpMatrix);
     g_mvpMatrix.translate(-12, -25, 3);
     g_mvpMatrix.scale(3, 3, 3);
+    quatMatrix.setFromQuat(qTot.x, qTot.y, qTot.z, qTot.w);
+    g_mvpMatrix.concat(quatMatrix);
     drawIso();
     g_mvpMatrix.translate(0, 0, 1);
     g_mvpMatrix.rotate(tor1_anglenow, 1, 0, 0);
     g_mvpMatrix.translate(0, 0, 1);
     drawTorus();
+    drawAxes();
     pushMatrix(g_mvpMatrix); // pushtor
       g_mvpMatrix.translate(-1, 0, 0);
       g_mvpMatrix.rotate(90, 0, 0, 1);
@@ -2452,7 +2453,7 @@ function dragQuat(xdrag, ydrag) {
     
     var dist = Math.sqrt(xdrag*xdrag + ydrag*ydrag);
     // console.log('xdrag,ydrag=',xdrag.toFixed(5),ydrag.toFixed(5),'dist=',dist.toFixed(5));
-    qNew.setFromAxisAngle(-ydrag + 0.0001, xdrag + 0.0001, 0.0, dist*150.0);
+    qNew.setFromAxisAngle(-ydrag * Math.sin(theta) + 0.0001, xdrag * Math.cos(theta) + 0.0001, deltaZ, dist*150.0);
     // (why add tiny 0.0001? To ensure we never have a zero-length rotation axis)
                 // why axis (x,y,z) = (-yMdrag,+xMdrag,0)? 
                 // -- to rotate around +x axis, drag mouse in -y direction.
