@@ -34,14 +34,16 @@ var g_vertCount = 0;    // # of vertices to draw
 var g_lastMS = Date.now();
 
 var eye = new Vector3([49.6, 52.51, 15.13]);
+//var eye = new Vector3([10, 0, 0]);
 var aimx;
 var aimy;
 var aimz;
 var aim = new Vector3([0, 0, 0]); //init values, will be changed immediately
 var up = new Vector3([0, 0, 1]);
-//var theta = (7*Math.PI)/6;
 var theta = 3.95;
+//var theta = 0;
 var deltaZ = -.27;
+//var deltaZ = 0;
 var velocity = .25;
 var near = .01;
 var far = 600;
@@ -2285,6 +2287,7 @@ function drawScene() {
     quatMatrix.setFromQuat(qTot.x, qTot.y, qTot.z, qTot.w);
     g_mvpMatrix.concat(quatMatrix);
     drawIso();
+    drawAxes();
     g_mvpMatrix.translate(0, 0, 1);
     g_mvpMatrix.rotate(tor1_anglenow, 1, 0, 0);
     g_mvpMatrix.translate(0, 0, 1);
@@ -2453,7 +2456,9 @@ function dragQuat(xdrag, ydrag) {
     
     var dist = Math.sqrt(xdrag*xdrag + ydrag*ydrag);
     // console.log('xdrag,ydrag=',xdrag.toFixed(5),ydrag.toFixed(5),'dist=',dist.toFixed(5));
-    qNew.setFromAxisAngle(-ydrag * Math.sin(theta) + 0.0001, xdrag * Math.cos(theta) + 0.0001, deltaZ, dist*150.0);
+    qNew.setFromAxisAngle(-ydrag * Math.cos(theta) + 0.0001, xdrag * -Math.sin(theta) + 0.0001, 0, dist*150.0);
+    var noo = ([-ydrag * Math.cos(theta), xdrag + Math.sin(theta), deltaZ]);
+    console.log("Axes:", noo);
     // (why add tiny 0.0001? To ensure we never have a zero-length rotation axis)
                 // why axis (x,y,z) = (-yMdrag,+xMdrag,0)? 
                 // -- to rotate around +x axis, drag mouse in -y direction.
@@ -2588,6 +2593,4 @@ function myMouseUp(ev, gl, g_canvas) {
 	g_xMdragTot += (x - g_xMclik);
 	g_yMdragTot += (y - g_yMclik);
   dragQuat(x - g_xMclik, y - g_yMclik);
-	g_xMdragTot = 0.0;
-	g_yMdragTot = 0.0;
 }
