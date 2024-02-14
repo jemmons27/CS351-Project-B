@@ -2284,6 +2284,7 @@ function drawScene() {
   pushMatrix(g_mvpMatrix);
     g_mvpMatrix.translate(-12, -25, 3);
     g_mvpMatrix.scale(3, 3, 3);
+    drawAxes();
     quatMatrix.setFromQuat(qTot.x, qTot.y, qTot.z, qTot.w);
     g_mvpMatrix.concat(quatMatrix);
     drawIso();
@@ -2456,9 +2457,7 @@ function dragQuat(xdrag, ydrag) {
     
     var dist = Math.sqrt(xdrag*xdrag + ydrag*ydrag);
     // console.log('xdrag,ydrag=',xdrag.toFixed(5),ydrag.toFixed(5),'dist=',dist.toFixed(5));
-    qNew.setFromAxisAngle(-ydrag * Math.cos(theta) + 0.0001, xdrag * -Math.sin(theta) + 0.0001, 0, dist*150.0);
-    var noo = ([-ydrag * Math.cos(theta), xdrag + Math.sin(theta), deltaZ]);
-    console.log("Axes:", noo);
+    qNew.setFromAxisAngle(-ydrag * Math.cos(theta) + 0.0001, xdrag * -Math.sin(theta) + 0.0001, dist * deltaZ, dist*150.0);
     // (why add tiny 0.0001? To ensure we never have a zero-length rotation axis)
                 // why axis (x,y,z) = (-yMdrag,+xMdrag,0)? 
                 // -- to rotate around +x axis, drag mouse in -y direction.
