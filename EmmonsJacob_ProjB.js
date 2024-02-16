@@ -2465,7 +2465,7 @@ function initBall() {
   ballLen = ballVerts.length/7;
 };
 
-
+//Separate Model, View, Projection Matrices? 
 function draw() {
 //==============================================================================
 // re-draw contents of all viewports.
@@ -2487,7 +2487,8 @@ function draw() {
   g_mvpMatrix = popMatrix();
   
 }
-
+var ModelMatrix = new Matrix4();
+var coords = new Vector4([-0.07474541032512982,-1.0,0.04872582694607064,1.0]);
 function drawScene() {
   drawGrid();
   drawAxes();
@@ -2652,7 +2653,43 @@ function setLeftViewPort() {
     gl.viewport(0, 0, g_canvas.width/2, g_canvas.height); //LLx, LLy, Width, Height			
 
     var vpAspect = (g_canvas.width/2) / g_canvas.height;	//Aspect Ratio
+  if (obj_view == true) {
+    ModelMatrix.setIdentity();
+    ModelMatrix.rotate(-90, 1, 0, 0);
+    ModelMatrix.translate(20, -5, 5)
+    ModelMatrix.scale(3, 3, 3);
+    ModelMatrix.translate(0, -1, 0);
+    ModelMatrix.rotate(-45, 1, 0, 0);
+    ModelMatrix.rotate(armj1_anglenow, 1, 0, 0); //Set max at 0?
+    ModelMatrix.translate(0, -1, 0)
+    ModelMatrix.translate(0, -1, 0);
+    ModelMatrix.rotate(-45, 1, 0, 0);
+    ModelMatrix.rotate(armj2_anglenow, 0, 0, 1);
+    ModelMatrix.translate(0, -1, 0);
 
+    ModelMatrix.scale(.66, .66, .66);
+    ModelMatrix.translate(-.15, -1.6, 0);
+    ModelMatrix.rotate(90, 1, 0, 0);
+    ModelMatrix.rotate(armj3_anglenow, 0, 0, 1);
+    ModelMatrix.printMe();
+    //1x4 x 4x4
+    // 0 4 8 12
+    // 1 5 9 13
+    // 2 6 10 14
+    // 3 7 11 15
+    var a = coords.elements[0] * ModelMatrix.elements[0] + coords.elements[1] * ModelMatrix.elements[1] + coords.elements[2] * ModelMatrix.elements[2]
+    + coords.elements[3] * ModelMatrix.elements[3]
+    var b = coords.elements[0] * ModelMatrix.elements[4] + coords.elements[1] * ModelMatrix.elements[5] + coords.elements[2] * ModelMatrix.elements[6]
+    + coords.elements[3] * ModelMatrix.elements[7]
+    var c = coords.elements[0] * ModelMatrix.elements[8] + coords.elements[1] * ModelMatrix.elements[9] + coords.elements[2] * ModelMatrix.elements[10]
+    + coords.elements[3] * ModelMatrix.elements[11]
+    g_mvpMatrix.setPerspective(frust_angle, vpAspect, near, far);
+    g_mvpMatrix.lookAt(	a, b, c,
+      // 'Center' or 'Eye Point',
+     aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
+ up.elements[0], up.elements[1], up.elements[2]);	
+  }
+  else {
 // For this viewport, set camera's eye point and the viewing volume:
     g_mvpMatrix.setPerspective(frust_angle,			// fovy: y-axis field-of-view in degrees 	
                                                   // (top <-> bottom in view frustum)
@@ -2665,7 +2702,8 @@ function setLeftViewPort() {
     g_mvpMatrix.lookAt(	eye.elements[0], eye.elements[1], eye.elements[2],
            				// 'Center' or 'Eye Point',
                   aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
-              up.elements[0], up.elements[1], up.elements[2]);					// View UP vector, all in 'world' coords.
+              up.elements[0], up.elements[1], up.elements[2]);	
+    				}				// View UP vector, all in 'world' coords.
   /*
     console.log("eye:", eye.elements);
     console.log("theta", theta);
@@ -2784,12 +2822,13 @@ function dragQuat(xdrag, ydrag) {
     diry = temp_vecy.cross(rotation);
     dirz = temp_vecz.cross(rotation);
     */
+   //LEFT AND RIGHT DRAGGING AROUND Z??  
     xvec = new Vector3([1, 0, 0]);
     yvec = new Vector3([0, 1, 0]);
     xaxis = temp_vec.cross(up).normalize();
     qNew.setFromAxisAngle(xaxis.elements[1] + .0001, xaxis.elements[0] + .0001, 0, ydrag * 150);
-    qNew2.setFromAxisAngle(aim.elements[0] - eye.elements[0], aim.elements[1] - eye.elements[1], aim.elements[2] - eye.elements[2], xdrag * 150);
-    //console.log("axes:", ydrag * xaxis.elements[1], xdrag * xaxis.elements[0]);
+    //qNew2.setFromAxisAngle(aim.elements[0] - eye.elements[0], aim.elements[1] - eye.elements[1], aim.elements[2] - eye.elements[2], xdrag * 150);
+    qNew2.setFromAxisAngle(0 + .0001, 0 + .0001, 1 + deltaZ, xdrag*150);
 
     //drag in -x, rotation about camera y
     //ydrag * xaxis.elements[0]
@@ -2821,7 +2860,7 @@ function dragQuat(xdrag, ydrag) {
     qTot.copy(qTmp);
     // show the new quaternion qTot on our webpage in the <div> element 'QuatValue'
 };
-
+var obj_view = false;
 function myKeyDown(kev) {
   console.log(  "--kev.code:",    kev.code,   "\t\t--kev.key:",     kev.key, 
 	"\n--kev.ctrlKey:", kev.ctrlKey,  "\t--kev.shiftKey:",kev.shiftKey,
@@ -2885,6 +2924,14 @@ function myKeyDown(kev) {
       aim.elements[0] -= velocity * dir.elements[0];
       aim.elements[1] -= velocity * dir.elements[1];
       aim.elements[2] -= velocity * dir.elements[2];
+      break;
+    case "KeyO":
+      if (obj_view == true) {
+        obj_view = false;
+      }
+      else {
+        obj_view = true;
+      }
       break;
   }
 }
