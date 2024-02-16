@@ -42,8 +42,8 @@ var aim = new Vector3([0, 0, 0]); //init values, will be changed immediately
 var up = new Vector3([0, 0, 1]);
 var theta = 3.95;
 //var theta = 0;
-var deltaZ = -.27;
-var deltaZ = 0;
+var deltaZ = -.2;
+//var deltaZ = 0;
 var velocity = .25;
 var near = .01;
 var far = 600;
@@ -2495,7 +2495,7 @@ function drawScene() {
   // Draw Crane
   pushMatrix(g_mvpMatrix)
     g_mvpMatrix.rotate(-90, 1, 0, 0);
-    g_mvpMatrix.translate(20, -5, 5)
+    g_mvpMatrix.translate(35, -8, 5)
     g_mvpMatrix.scale(3, 3, 3);
     drawArm();
 
@@ -2515,12 +2515,12 @@ function drawScene() {
     g_mvpMatrix.translate(-.15, -1.6, 0);
     g_mvpMatrix.rotate(90, 1, 0, 0);
     g_mvpMatrix.rotate(armj3_anglenow, 0, 0, 1);
-    drawAxes();
     drawArm();
 
     pushMatrix(g_mvpMatrix);
       g_mvpMatrix.scale(.6, .6, .6);
       g_mvpMatrix.translate(0, 2.6, 0);
+      drawAxes();
       drawDiamond();
     g_mvpMatrix = popMatrix();
 
