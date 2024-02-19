@@ -105,6 +105,18 @@ var g_yMclik=0.0;
 var g_xMdragTot=0.0;	// total (accumulated) mouse-drag amounts (in CVV coords).
 var g_yMdragTot=0.0;
 
+var drop2_anglenow  =  0.0;       // init Current rotation angle, in degrees
+var drop2_anglerate = 200.0;       // init Rotation angle rate, in degrees/second.
+var drop2_anglebrake=	 1.0;				// init Speed control; 0=stop, 1=full speed.
+var drop2_anglemin  = -45.0;       // init min, max allowed angle, in degrees.
+var drop2_anglemax  = 45.0;
+
+var drop3_anglenow  =  0.0;       // init Current rotation angle, in degrees
+var drop3_anglerate = 30.0;       // init Rotation angle rate, in degrees/second.
+var drop3_anglebrake=	 1.0;				// init Speed control; 0=stop, 1=full speed.
+var drop3_anglemin  = -25.0;       // init min, max allowed angle, in degrees.
+var drop3_anglemax  = 25.0;
+
 var qNew = new Quaternion(0,0,0,1);
 var qNew2 = new Quaternion(0, 0, 0, 1); // most-recent mouse drag's rotation
 var qTot = new Quaternion(0,0,0,1);	// 'current' orientation (made from qNew)
@@ -264,6 +276,27 @@ function timerAll() {
     (ballz <= ball_min && ball_rate < 0)) {
       ball_rate *= -1;
     };
+    drop2_anglenow += drop2_anglerate * drop2_anglebrake * (elapsedMS * 0.001);
+    if((drop2_anglenow >= drop2_anglemax && drop2_anglerate > 0) || // going over max, or
+      (drop2_anglenow <= drop2_anglemin && drop2_anglerate < 0)  ) {// going under min ?
+      drop2_anglerate *= -1; // YES: reverse direction.
+      };
+    if(drop2_anglemin > drop2_anglemax)	
+      {// if min and max don't limit the angle, then
+        if(     drop2_anglenow < -360.0) drop2_anglenow += 360.0;	// go to >= -180.0 or
+        else if(drop2_anglenow >  360.0) drop2_anglenow -= 360.0;	// go to <= +180.0
+      }
+
+      drop3_anglenow += drop3_anglerate * drop3_anglebrake * (elapsedMS * 0.001);
+      if((drop3_anglenow >= drop3_anglemax && drop3_anglerate > 0) || // going over max, or
+        (drop3_anglenow <= drop3_anglemin && drop3_anglerate < 0)  ) {// going under min ?
+        drop3_anglerate *= -1; // YES: reverse direction.
+        };
+      if(drop3_anglemin > drop3_anglemax)	
+        {// if min and max don't limit the angle, then
+          if(     drop3_anglenow < -360.0) drop3_anglenow += 360.0;	// go to >= -180.0 or
+          else if(drop3_anglenow >  360.0) drop3_anglenow -= 360.0;	// go to <= +180.0
+        }
 
 
     
@@ -2512,8 +2545,8 @@ function drawScene() {
     g_mvpMatrix.translate(0, -1, 0);
     drawArm();
 
-    g_mvpMatrix.scale(.66, .66, .66);
-    g_mvpMatrix.translate(-.15, -1.6, 0);
+    g_mvpMatrix.scale(.4, .4, .4);
+    g_mvpMatrix.translate(-.15, -2.5, 0);
     g_mvpMatrix.rotate(90, 1, 0, 0);
     g_mvpMatrix.rotate(armj3_anglenow, 0, 0, 1);
     drawArm();
@@ -2549,12 +2582,10 @@ function drawScene() {
   pushMatrix(g_mvpMatrix);
     g_mvpMatrix.translate(-12, -25, 3);
     g_mvpMatrix.scale(3, 3, 3);
-    drawAxes();
     quatMatrix.setFromQuat(qTot.x, qTot.y, qTot.z, qTot.w);
     g_mvpMatrix.concat(quatMatrix);
     //g_mvpMatrix.rotate(armj3_anglenow, .04, 0, 0);
     drawIso();
-    drawAxes();
     g_mvpMatrix.translate(0, 0, 1);
     g_mvpMatrix.rotate(tor1_anglenow, 1, 0, 0);
     g_mvpMatrix.translate(0, 0, 1);
@@ -2645,6 +2676,23 @@ function drawScene() {
       drawCone();
     g_mvpMatrix = popMatrix();
   g_mvpMatrix = popMatrix();
+  pushMatrix(g_mvpMatrix);
+    g_mvpMatrix.scale(2, 2, 2);
+    g_mvpMatrix.translate(15, 11, 1);
+    drawIso();
+    g_mvpMatrix.scale(.5, .5, .5);
+    g_mvpMatrix.translate(0, 1.8, 0);
+    g_mvpMatrix.rotate(180, 1, 0, 0);
+    g_mvpMatrix.rotate(drop2_anglenow, 0, 0, 1);
+    g_mvpMatrix.translate(0, -1, 0);
+    drawDrop();
+    g_mvpMatrix.translate(0, 0, 0);
+    g_mvpMatrix.rotate(drop3_anglenow, 0, 0, 1);
+    g_mvpMatrix.translate(0, -1.5, 0);
+    drawDrop();
+    g_mvpMatrix.translate(0, -1.5, 0);
+    drawDrop();
+  g_mvpMatrix = popMatrix();
   
 };
 //VIEWPORT/CAMERA FUNCTIONS
@@ -2653,43 +2701,6 @@ function setLeftViewPort() {
     gl.viewport(0, 0, g_canvas.width/2, g_canvas.height); //LLx, LLy, Width, Height			
 
     var vpAspect = (g_canvas.width/2) / g_canvas.height;	//Aspect Ratio
-  if (obj_view == true) {
-    ModelMatrix.setIdentity();
-    ModelMatrix.rotate(-90, 1, 0, 0);
-    ModelMatrix.translate(20, -5, 5)
-    ModelMatrix.scale(3, 3, 3);
-    ModelMatrix.translate(0, -1, 0);
-    ModelMatrix.rotate(-45, 1, 0, 0);
-    ModelMatrix.rotate(armj1_anglenow, 1, 0, 0); //Set max at 0?
-    ModelMatrix.translate(0, -1, 0)
-    ModelMatrix.translate(0, -1, 0);
-    ModelMatrix.rotate(-45, 1, 0, 0);
-    ModelMatrix.rotate(armj2_anglenow, 0, 0, 1);
-    ModelMatrix.translate(0, -1, 0);
-
-    ModelMatrix.scale(.66, .66, .66);
-    ModelMatrix.translate(-.15, -1.6, 0);
-    ModelMatrix.rotate(90, 1, 0, 0);
-    ModelMatrix.rotate(armj3_anglenow, 0, 0, 1);
-    ModelMatrix.printMe();
-    //1x4 x 4x4
-    // 0 4 8 12
-    // 1 5 9 13
-    // 2 6 10 14
-    // 3 7 11 15
-    var a = coords.elements[0] * ModelMatrix.elements[0] + coords.elements[1] * ModelMatrix.elements[1] + coords.elements[2] * ModelMatrix.elements[2]
-    + coords.elements[3] * ModelMatrix.elements[3]
-    var b = coords.elements[0] * ModelMatrix.elements[4] + coords.elements[1] * ModelMatrix.elements[5] + coords.elements[2] * ModelMatrix.elements[6]
-    + coords.elements[3] * ModelMatrix.elements[7]
-    var c = coords.elements[0] * ModelMatrix.elements[8] + coords.elements[1] * ModelMatrix.elements[9] + coords.elements[2] * ModelMatrix.elements[10]
-    + coords.elements[3] * ModelMatrix.elements[11]
-    g_mvpMatrix.setPerspective(frust_angle, vpAspect, near, far);
-    g_mvpMatrix.lookAt(	a, b, c,
-      // 'Center' or 'Eye Point',
-     aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
- up.elements[0], up.elements[1], up.elements[2]);	
-  }
-  else {
 // For this viewport, set camera's eye point and the viewing volume:
     g_mvpMatrix.setPerspective(frust_angle,			// fovy: y-axis field-of-view in degrees 	
                                                   // (top <-> bottom in view frustum)
@@ -2703,7 +2714,7 @@ function setLeftViewPort() {
            				// 'Center' or 'Eye Point',
                   aim.elements[0], aim.elements[1], aim.elements[2],					// look-At point,
               up.elements[0], up.elements[1], up.elements[2]);	
-    				}				// View UP vector, all in 'world' coords.
+    				// View UP vector, all in 'world' coords.
   /*
     console.log("eye:", eye.elements);
     console.log("theta", theta);
@@ -2924,14 +2935,6 @@ function myKeyDown(kev) {
       aim.elements[0] -= velocity * dir.elements[0];
       aim.elements[1] -= velocity * dir.elements[1];
       aim.elements[2] -= velocity * dir.elements[2];
-      break;
-    case "KeyO":
-      if (obj_view == true) {
-        obj_view = false;
-      }
-      else {
-        obj_view = true;
-      }
       break;
   }
 }
