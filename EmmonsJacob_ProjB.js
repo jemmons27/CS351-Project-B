@@ -2828,7 +2828,7 @@ function dragQuat(xdrag, ydrag) {
     xaxis = temp_vec.cross(up).normalize();
     qNew.setFromAxisAngle(xaxis.elements[1] + .0001, xaxis.elements[0] + .0001, 0, ydrag * 150);
     //qNew2.setFromAxisAngle(aim.elements[0] - eye.elements[0], aim.elements[1] - eye.elements[1], aim.elements[2] - eye.elements[2], xdrag * 150);
-    qNew2.setFromAxisAngle(0 + .0001, 0 + .0001, 1 + deltaZ, xdrag*150);
+    qNew2.setFromAxisAngle(0 + .0001, 0 + .0001, 1, xdrag*150);
 
     //drag in -x, rotation about camera y
     //ydrag * xaxis.elements[0]
